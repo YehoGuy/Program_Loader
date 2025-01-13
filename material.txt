@@ -1,0 +1,48 @@
+What Are Program Headers?
+Program headers are part of the ELF (Executable and Linkable Format) file and describe how the operating 
+system should load the file into memory for execution. They are critical for executables and shared libraries.
+
+Purpose of Program Headers:
+1. Define the memory layout of the program (e.g., code and data segments).
+2. Guide the loader in mapping ELF file contents to memory.
+3. Specify permissions and other runtime information for each segment.
+
+Structure of Program Headers (Elf32_Phdr):
+typedef struct {
+    Elf32_Word p_type;    // Type of segment
+    Elf32_Off  p_offset;  // Offset in the file
+    Elf32_Addr p_vaddr;   // Virtual address in memory
+    Elf32_Addr p_paddr;   // Physical address (ignored on most systems)
+    Elf32_Word p_filesz;  // Size of segment in the file
+    Elf32_Word p_memsz;   // Size of segment in memory
+    Elf32_Word p_flags;   // Segment flags (read, write, execute)
+    Elf32_Word p_align;   // Alignment
+} Elf32_Phdr;
+
+Key Fields Explained:
+- p_type: Specifies the segment type (e.g., PT_LOAD for loadable segments).
+- p_offset: Offset in the ELF file where the segment begins.
+- p_vaddr: Virtual memory address where the segment should be mapped.
+- p_filesz: Size of the segment in the file.
+- p_memsz: Size of the segment in memory (can be larger than p_filesz for uninitialized data).
+- p_flags: Access permissions (read, write, execute).
+- p_align: Alignment requirements.
+
+Example Program Headers (readelf -l output):
+Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+LOAD           0x000000 0x08048000 0x08048000 0x00100 0x00100 R E 0x1000
+LOAD           0x001000 0x08049000 0x08049000 0x00020 0x00100 RW  0x1000
+
+How Are Program Headers Used?
+- The loader uses program headers to:
+  1. Identify sections of the ELF file to load into memory.
+  2. Map file contents to virtual memory addresses using mmap or similar methods.
+  3. Set appropriate memory permissions (read, write, execute).
+- For example, a header with p_offset = 0x100 and p_vaddr = 0x08048000 maps file data starting at 0x100 to memory at 0x08048000.
+
+Relation to ELF Segments:
+- Program headers describe segments (contiguous parts of the file used during execution).
+- Segments differ from sections, which are used during compilation and linking.
+
+Conclusion:
+Program headers are essential for loading and running ELF files. They define how file contents are mapped into memory and specify runtime properties like permissions and alignment.

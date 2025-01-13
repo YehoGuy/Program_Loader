@@ -1,6 +1,9 @@
 /*
  * Task 0 - Program Header Iterator for ELF Files
- * Author: [Your Name]
+ * The program header table contains critical information for the loader:
+ * What sections of the ELF file need to be loaded into memory.
+ * Virtual memory addresses where these sections should be mapped.
+ * Sizes, permissions, and other attributes of the segments.
  * Description: This program accepts a 32-bit ELF file as a command-line argument,
  * maps it into memory, and iterates over its program headers using a custom iterator function.
  */
@@ -29,6 +32,8 @@ int foreach_phdr(void *map_start, void (*func)(Elf32_Phdr *, int), int arg) {
     Elf32_Ehdr *elf_header = (Elf32_Ehdr *)map_start; // ELF header at the start of the mapped file
 
     // Verify ELF magic number
+    // check that the first 4 bytes of the file
+    // match the ELF identification magic numbers: 0x7f, 'E', 'L', 'F'
     if (elf_header->e_ident[EI_MAG0] != ELFMAG0 ||
         elf_header->e_ident[EI_MAG1] != ELFMAG1 ||
         elf_header->e_ident[EI_MAG2] != ELFMAG2 ||
@@ -38,6 +43,7 @@ int foreach_phdr(void *map_start, void (*func)(Elf32_Phdr *, int), int arg) {
     }
 
     // Get program header table information
+    // elf_header->e_phoff gives the offset (in bytes) from the start of the file to the program header table.
     Elf32_Phdr *ph_table = (Elf32_Phdr *)((char *)map_start + elf_header->e_phoff);
     int ph_count = elf_header->e_phnum;
 
@@ -62,6 +68,9 @@ void print_phdr_info(Elf32_Phdr *phdr, int index) {
     printf("Program header number %d at address %p\n", index, (void *)phdr);
 }
 
+
+
+// for testing
 int main(int argc, char **argv) {
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <ELF file>\n", argv[0]);
@@ -83,7 +92,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // Map the file into memory
+    // Map the file into this loader program's virtual memory
     void *map_start = mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (map_start == MAP_FAILED) {
         perror("Error mapping file");
@@ -94,6 +103,7 @@ int main(int argc, char **argv) {
     // Iterate over the program headers
     if (foreach_phdr(map_start, print_phdr_info, 0) < 0) {
         fprintf(stderr, "Error iterating over program headers.\n");
+        // Clean up
         munmap(map_start, file_size);
         close(fd);
         return 1;
