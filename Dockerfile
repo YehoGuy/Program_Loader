@@ -21,3 +21,4 @@ CMD ["/bin/bash"]
 # build the Docker image with: "docker build -t my-32bit-env ."
 # Run the container and mount your working directory: "docker run -it --rm -v $(pwd):/app my-32bit-env"
 # Navigate to the /app directory if not already there. and "make".
+# after fiishing: "exit".
